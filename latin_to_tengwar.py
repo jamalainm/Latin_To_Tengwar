@@ -126,7 +126,7 @@ class LatinText:
 
     """
     def __init__(self,latin_string):
-        self.latin_string = latin_string
+        self.latin_string = latin_string.lower()
         self.words = re.split("\W+",self.latin_string)
 
 class LatinWord:
@@ -343,5 +343,5 @@ def transcribe_sentence(sentence):
 
 
 if __name__ == "__main__":
-    my_sentence = transcribe_sentence("hísiel cápa nómerya foinallo")
+    my_sentence = transcribe_sentence("Hísiel cápa nómerya foinallo")
     print(my_sentence)
