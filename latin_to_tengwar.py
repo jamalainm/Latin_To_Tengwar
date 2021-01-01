@@ -15,6 +15,19 @@ combined_vowels = {
         'i' : 'G',
         'o' : 'H',
         'u' : 'J',
+        'ä' : 'C',
+        'ë' : 'F',
+        'ï' : 'G',
+        'ö' : 'H',
+        'ü' : 'J',
+        }
+
+long_vowels = {
+        'á' : '~C',
+        'é' : '~F',
+        'í' : '~G',
+        'ó' : '~H',
+        'ú' : '~J',
         }
 
 independent_vowels = {
@@ -60,6 +73,10 @@ doubles = {
         'ny' : '5Ì',
         'ry' : '7Ì',
         'ly' : 'jÌ',
+        'tt' : "1'",
+        'nn' : "5'",
+        'll' : "j'",
+        'mm' : "t'",
         }
 
 triples = {
@@ -137,50 +154,78 @@ class LatinWord:
 
     def transliterate(self):
         first = True
-        while self.latin_word_length > 2:
+        word_length = len(self.latin_word)
+        while word_length > 2:
             """ run through all substitutions """
             if self.triple_check():
                 self.triple_substitute()
+                word_length -= 3
             elif self.double_check():
                 self.double_substitute()
+                word_length -= 2
             elif self.initial_vowel_check():
-                self.independent_vowel_substitute
+                self.independent_vowel_substitute()
+                word_length -= 1
             elif self.initial_h_check():
                 self.initial_h_substitute()
+                word_length -= 1
+            elif self.long_vowel_check():
+                self.long_vowel_substitute()
+                word_length -= 1
             elif self.preceding_vowel_check():
-                self.independent_vowel_substitute
+                self.independent_vowel_substitute()
+                word_length -= 1
             elif self.combined_vowel_check():
-                self.combined_vowel_substitute
+                self.combined_vowel_substitute()
+                word_length -= 1
             elif self.consonant_check():
                 self.consonant_substitute()
+                word_length -= 1
 
-        while self.latin_word_length > 1:
+        while word_length > 1:
             """ run double and signle substitutions, modified doubles """
-            elif self.double_check():
+            if self.double_check():
                 self.double_substitute()
+                word_length -= 2
             elif self.initial_vowel_check():
-                self.independent_vowel_substitute
+                self.independent_vowel_substitute()
+                word_length -= 1
             elif self.initial_h_check():
                 self.initial_h_substitute()
+                word_length -= 1
+            elif self.long_vowel_check():
+                self.long_vowel_substitute()
+                word_length -= 1
             elif self.preceding_vowel_check():
-                self.independent_vowel_substitute
+                self.independent_vowel_substitute()
+                word_length -= 1
             elif self.combined_vowel_check():
-                self.combined_vowel_substitute
+                self.combined_vowel_substitute()
+                word_length -= 1
             elif self.consonant_check():
                 self.consonant_substitute()
+                word_length -= 1
 
-        while self.latin_word_length > 0:
+        while word_length > 0:
             """ run individual substitutions """
-            elif self.initial_vowel_check():
-                self.independent_vowel_substitute
+            if self.initial_vowel_check():
+                self.independent_vowel_substitute()
+                word_length -= 1
             elif self.initial_h_check():
                 self.initial_h_substitute()
+                word_length -= 1
+            elif self.long_vowel_check():
+                self.long_vowel_substitute()
+                word_length -= 1
             elif self.preceding_vowel_check():
-                self.independent_vowel_substitute
+                self.independent_vowel_substitute()
+                word_length -= 1
             elif self.combined_vowel_check():
-                self.combined_vowel_substitute
+                self.combined_vowel_substitute()
+                word_length -= 1
             elif self.consonant_check():
                 self.consonant_substitute()
+                word_length -= 1
 
 
     def triple_check(self):
@@ -206,7 +251,7 @@ class LatinWord:
             self.annatar_word += self.latin_word
             self.latin_word = ""
         else:
-            self.annatar_word += self.latin_word[:3]
+            self.annatar_word += triples[self.latin_word[:3]]
             self.latin_word = self.latin_word[3:]
 
     def double_substitute(self):
@@ -214,7 +259,7 @@ class LatinWord:
             self.annatar_word += self.latin_word
             self.latin_word = ""
         else:
-            self.annatar_word += self.latin_word[:2]
+            self.annatar_word += doubles[self.latin_word[:2]]
             self.latin_word = self.latin_word[2:]
 
     def initial_vowel_check(self):
@@ -226,7 +271,7 @@ class LatinWord:
             return True
 
     def independent_vowel_substitute(self):
-        self.annatar_word += self.latin_word[0]
+        self.annatar_word += independent_vowels[self.latin_word[0]]
         if len(self.latin_word) == 1:
             self.latin_word = ""
         else:
@@ -240,15 +285,16 @@ class LatinWord:
             self.latin_word = self.latin_word[1:]
 
     def preceding_vowel_check(self):
-        if len(self.annatar_word) > 0:
+        if len(self.annatar_word) > 0 and self.latin_word[0] in vowels:
             if self.annatar_word[-1] in combined_vowels.values():
                 return True
-        else:
-            return False
+            else:
+                return False
 
     def combined_vowel_check(self):
-        if len(self.annatar_word) > 0 and self.latin_word[0] in vowels:
-            return True
+        if len(self.annatar_word) > 0: 
+            if self.latin_word[0] in vowels:
+                return True
 
     def combined_vowel_substitute(self):
         self.annatar_word += combined_vowels[self.latin_word[0]]
@@ -268,11 +314,34 @@ class LatinWord:
         else:
             self.latin_word = self.latin_word[1:]
 
+    def long_vowel_check(self):
+        if self.latin_word[0] in long_vowels.keys():
+            return True
+
+    def long_vowel_substitute(self):
+        self.annatar_word += long_vowels[self.latin_word[0]]
+        if len(self.latin_word) == 1:
+            self.latin_word = ""
+        else:
+            self.latin_word = self.latin_word[1:]
+
+def transcribe_sentence(sentence):
+    latin_sentence = LatinText(sentence)
+
+    words = [w for w in latin_sentence.words]
+
+    quenya_words = []
+
+    for word in words:
+        tengwar_word = LatinWord(word)
+        tengwar_word.transliterate()
+        quenya_words.append(tengwar_word.annatar_word)
+
+    new_sentence = ' '.join(quenya_words)
+
+    return new_sentence
+
 
 if __name__ == "__main__":
-    sentence = LatinText("quetin i lambë eldaiva")
-    words = [w for w in sentence.words]
-    for w in words:
-        a_w = LatinWord(w)
-        a_w.transliterate()
-        print(a_w.annatar_word)
+    my_sentence = transcribe_sentence("hísiel cápa nómerya foinallo")
+    print(my_sentence)
